@@ -32,47 +32,52 @@ public class BoardsController {
 	private final HttpSession session;
 	private final BoardsService boardsService;
 
-	
 	/***
 	 * 
-	 *     인증과 권한 체크는 지금 하지 마세요!!
+	 * 인증과 권한 체크는 지금 하지 마세요!!
 	 */
-	
+
+	// 인증 필요
 	// 어떤 게시글을 누가 좋아하는지 (boardsId, usersId)
-	@PostMapping("/boards/{id}/loves")
-	public @ResponseBody CMRespDto<?> insertLoves(@PathVariable Integer id){
+	@PostMapping("/s/boards/{id}/loves")
+	public @ResponseBody CMRespDto<?> insertLoves(@PathVariable Integer id) {
 		Users principal = (Users) session.getAttribute("principal");
 		Loves loves = new Loves(principal.getId(), id);
 		boardsService.좋아요(loves);
 		return new CMRespDto<>(1, "좋아요 성공", loves);
 	}
-	
-	@DeleteMapping("/boards/{id}/loves/{lovesId}")
-	public @ResponseBody CMRespDto<?> deleteLoves(@PathVariable Integer id, @PathVariable Integer lovesId){
+
+	// 인증 필요
+	@DeleteMapping("/s/boards/{id}/loves/{lovesId}")
+	public @ResponseBody CMRespDto<?> deleteLoves(@PathVariable Integer id, @PathVariable Integer lovesId) {
 		boardsService.좋아요취소(lovesId);
 		return new CMRespDto<>(1, "좋아요 취소 성공", null);
 	}
-	
-	@PutMapping("/boards/{id}")
+
+	// 인증 필요
+	@PutMapping("/s/boards/{id}")
 	public @ResponseBody CMRespDto<?> update(@PathVariable Integer id, @RequestBody UpdateDto updateDto) {
 		boardsService.게시글수정하기(id, updateDto);
 		return new CMRespDto<>(1, "글수정성공", null);
 	}
 
-	@GetMapping("/boards/{id}/updateForm")
+	// 인증 필요
+	@GetMapping("/s/boards/{id}/updateForm")
 	public String updateForm(@PathVariable Integer id, Model model) {
 		Boards boardsPS = boardsService.게시글수정화면데이터가져오기(id);
 		model.addAttribute("boards", boardsPS);
 		return "boards/updateForm";
 	}
 
-	@DeleteMapping("/boards/{id}")
+	// 인증 필요
+	@DeleteMapping("/s/boards/{id}")
 	public @ResponseBody CMRespDto<?> deleteBoards(@PathVariable Integer id) {
 		boardsService.게시글삭제하기(id);
 		return new CMRespDto<>(1, "게시글삭제", null);
 	}
 
-	@PostMapping("/boards")
+	// 인증 필요
+	@PostMapping("/s/boards")
 	public @ResponseBody CMRespDto<?> writeBoards(@RequestBody WriteDto writeDto) {
 		Users principal = (Users) session.getAttribute("principal");
 		boardsService.게시글쓰기(writeDto, principal);
@@ -83,7 +88,7 @@ public class BoardsController {
 	public String getBoardList(Model model, Integer page, String keyword) { // 0 -> 0, 1->10, 2->20
 		PagingDto pagingDto = boardsService.게시글목록보기(page, keyword);
 		model.addAttribute("pagingDto", pagingDto);
-		
+
 		Map<String, Object> referer = new HashMap<>();
 		referer.put("page", pagingDto.getCurrentPage());
 		referer.put("keyword", pagingDto.getKeyword());
@@ -94,30 +99,19 @@ public class BoardsController {
 	@GetMapping("/boards/{id}")
 	public String getBoardDetail(@PathVariable Integer id, Model model) {
 		Users principal = (Users) session.getAttribute("principal");
-		if(principal == null) {
-			model.addAttribute("detailDto", boardsService.게시글상세보기(id, 0));
-		}else {
+		if (principal == null) {
+			model.addAttribute("detailDto", boardsService.게시글상세보기(id, null));
+		} else {
 			model.addAttribute("detailDto", boardsService.게시글상세보기(id, principal.getId()));
 		}
-		
+
 		return "boards/detail";
 	}
 
-	@GetMapping("/boards/writeForm")
+	// 인증 필요
+	@GetMapping("/s/boards/writeForm")
 	public String writeForm() {
-		Users principal = (Users) session.getAttribute("principal");
-		if (principal == null) {
-			return "redirect:/loginForm";
-		}
+
 		return "boards/writeForm";
 	}
 }
-
-
-
-
-
-
-
-
-
